@@ -35,7 +35,13 @@ The plugin needs a Claude Code build with mods (function-hook plugins). The mod 
 
 ### The status line (optional)
 
-Plugins can't set the main status line, so this part is a copy-and-configure step. Copy `statusline/statusline.sh` to `~/.claude/statusline.sh`, then add to `~/.claude/settings.json`:
+Plugins can't set the main status line, so this part is a download-and-configure step. Download the script:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/warmlogic/claude-hintline/main/statusline/statusline.sh -o ~/.claude/statusline.sh
+```
+
+Then point `statusLine` at it in `~/.claude/settings.json`, replacing any `statusLine` block already there:
 
 ```json
 {
@@ -46,7 +52,7 @@ Plugins can't set the main status line, so this part is a copy-and-configure ste
 }
 ```
 
-`/bin/bash` is deliberate. On macOS it starts in about 4 ms, versus about 10 ms for a Homebrew `bash` found first on `PATH`, and the script is written to run on its bash 3.2. A custom status line hides most of Claude Code's footer keyboard hints (`esc to interrupt`, `? for shortcuts`); that's Claude Code's behavior for any status line.
+The status line updates on the next refresh; no restart needed. To update the script later, run the same `curl`. `/bin/bash` is deliberate. On macOS it starts in about 4 ms, versus about 10 ms for a Homebrew `bash` found first on `PATH`, and the script is written to run on its bash 3.2. A custom status line hides most of Claude Code's footer keyboard hints (`esc to interrupt`, `? for shortcuts`); that's Claude Code's behavior for any status line.
 
 Repo links are [OSC 8](https://en.wikipedia.org/wiki/ANSI_escape_code#OSC) hyperlinks (Cmd+click on macOS), which need a terminal that supports them, such as iTerm2, Kitty, or WezTerm.
 
