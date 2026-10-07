@@ -52,12 +52,13 @@ export const register: Register = on => {
   })
 
   // Model, context and rate-limit usage, dim, after the hint line under the prompt.
-  // `tail` is one string every plugin shares, so this appends to it.
+  // `tail` is one string every plugin shares; this puts usage first, so another
+  // plugin that appends its own piece lands after it whichever hook runs first.
   on('ui.render', { component: 'PromptHint' }, async ($, e, next) => {
     const current = await read($, usage)
     const text = current === null ? '' : usageLine(current)
     if (!text) return next(e)
-    const tail = [e.props.tail, text].filter(Boolean).join(' · ')
+    const tail = [text, e.props.tail].filter(Boolean).join(' · ')
     return next({ ...e, props: { ...e.props, tail } })
   })
 }
