@@ -39,6 +39,7 @@ tests/
 - **Rate-limit windows are data, not code.** Every window in `$.session.usage().rateLimits` is a candidate; `<number word>_<hour|day|week>` kinds get a short label (`5h`, `7d`), and any other kind (`spend_limit`) is shown as given rather than guessed at. The shortest window always shows and the rest only from 50% used, which keeps the dim, right-truncated hint short.
 - **Model names are parsed, never guessed.** `prettyModel` names an ID only when it matches `claude-<family>-<major>[-<minor>]` with the known suffixes; anything else, including the older `claude-3-5-sonnet` order, is shown raw.
 - **No PR number.** Claude Code's footer already shows `PR #N` with its review state (`prStatusFooterEnabled`).
+- **The status line's input keys** (`workspace.current_dir`, `workspace.git_worktree`, `workspace.repo.{host,owner,name}`) are defined in Claude Code's [status line docs](https://code.claude.com/docs/en/statusline); a key that changes degrades silently to the folder-name fallback.
 - **The status line launches nothing.** Bash pattern matching instead of `jq`, `.git/HEAD` instead of `git`, `workspace.repo` (parsed from `origin` by Claude Code) for the link, and only `${var}`-braced expansions next to non-ASCII glyphs: bash 3.2 reads the bytes of `⎇` as part of an unbraced variable name. `workspace.repo`'s keys are matched inside that object only, since other objects also have a `name`.
 
 ## Unversioned

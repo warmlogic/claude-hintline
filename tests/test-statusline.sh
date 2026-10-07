@@ -55,6 +55,9 @@ check "outside a repo: ~-relative path" \
 check "outside a repo, long: last two folders" \
   "{\"workspace\":{\"current_dir\":\"$SANDBOX/plain/a/quite/long/folder/name/here\"}}" \
   "…/name/here"
+check "outside a repo, long top-level folder" \
+  "{\"workspace\":{\"current_dir\":\"/averyveryveryveryverylongfoldernameoverthirtychars\"}}" \
+  "/averyveryveryveryverylongfoldernameoverthirtychars"
 check "filesystem root" \
   "{\"workspace\":{\"current_dir\":\"/\"}}" \
   "/"

@@ -26,6 +26,7 @@ describe('tokens', () => {
     expect(tokens(1_000_000)).toBe('1M')
     expect(tokens(1_500_000)).toBe('1.5M')
     expect(tokens(200_000)).toBe('200k')
+    expect(tokens(999_600)).toBe('1M')
   })
 })
 

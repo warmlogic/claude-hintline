@@ -8,7 +8,8 @@
 # subshells. JSON fields are matched with bash patterns, which breaks only on a
 # path containing a literal `"`. Works on macOS /bin/bash 3.2.
 
-input=$(</dev/stdin)
+# read -d '' reads to EOF with a builtin (a $(...) would fork); its nonzero exit at EOF is expected
+IFS= read -r -d '' input
 
 # Sets the variable named $1 to that key's string value, matched in text $2 (default: the input).
 field() {
@@ -41,7 +42,7 @@ if [ -z "$root" ]; then
   case $path in "$HOME" | "$HOME"/*) path="~${path#"$HOME"}" ;; esac
   if [ ${#path} -gt 30 ]; then
     parent=${cwd%/*}
-    path="…/${parent##*/}/${cwd##*/}"
+    if [ -n "$parent" ]; then path="…/${parent##*/}/${cwd##*/}"; else path=$cwd; fi
   fi
   printf '%s%s%s\n' "$yellow" "${path:-/}" "$reset"
   exit 0

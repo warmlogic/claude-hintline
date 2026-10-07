@@ -27,6 +27,9 @@ async function measure($: Engine): Promise<Usage> {
 async function refresh($: Engine): Promise<void> {
   try {
     const next = await measure($)
+    const current = await read($, usage)
+    // A write redraws the hint, so skip it when the visible text would not change
+    if (current !== null && usageLine(current) === usageLine(next)) return
     await update($, usage, () => next)
   } catch (error) {
     $.ui.log(`hintline: could not refresh (${error instanceof Error ? error.message : String(error)})`)

@@ -34,8 +34,10 @@ export function prettyModel(id: string): string {
 
 /** Compact token count: `417k`, `1M`, `1.5M`. */
 export function tokens(count: number): string {
-  if (count >= 1_000_000) return `${Number((count / 1_000_000).toFixed(1))}M`
-  return `${Math.round(count / 1000)}k`
+  // Choose the unit after rounding, so 999_600 reads 1M rather than 1000k
+  const thousands = Math.round(count / 1000)
+  if (thousands >= 1000) return `${Number((count / 1_000_000).toFixed(1))}M`
+  return `${thousands}k`
 }
 
 /** Time until reset, minutes always shown below a day: `3d04h`, `1h44m`, `2h03m`, `41m`. */
