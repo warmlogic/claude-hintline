@@ -1,0 +1,4 @@
+.claude/settings.local.json
+.claude/worktrees/
+.claude-plugin/types/
+.DS_Store
