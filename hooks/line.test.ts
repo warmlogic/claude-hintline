@@ -9,10 +9,14 @@ describe('prettyModel', () => {
     expect(prettyModel('claude-haiku-4-5-20251001')).toBe('Haiku 4.5')
     expect(prettyModel('claude-fable-5-1')).toBe('Fable 5.1')
     expect(prettyModel('us.anthropic.claude-opus-5-5-v1:0')).toBe('Opus 5.5')
+    expect(prettyModel('claude-opus-4-1@20250805')).toBe('Opus 4.1')
+    expect(prettyModel('claude-opus-4-0')).toBe('Opus 4')
   })
   test('keeps an ID in no known shape', async () => {
     expect(prettyModel('gpt-x')).toBe('gpt-x')
     expect(prettyModel('Opus 5.5')).toBe('Opus 5.5')
+    expect(prettyModel('claude-3-5-sonnet-20241022')).toBe('claude-3-5-sonnet-20241022')
+    expect(prettyModel('claude-mythos-preview')).toBe('claude-mythos-preview')
   })
 })
 

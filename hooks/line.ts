@@ -10,14 +10,16 @@ const MS_PER_HOUR = 3_600_000
 /**
  * A model ID as people say it: `claude-opus-5-5[1m]` → `Opus 5.5`,
  * `claude-haiku-4-5-20251001` → `Haiku 4.5`. Strips a provider prefix
- * (`us.anthropic.`), a `[1m]`-style suffix, a date, and a `-v1:0` revision;
- * an ID in no known shape is shown as given.
+ * (`us.anthropic.`), a `[1m]`-style suffix, a `-` or `@` date, and a `-v1:0`
+ * revision. An older `claude-3-5-sonnet`-style ID, or any other shape, is
+ * shown as given, never guessed at.
  */
 export function prettyModel(id: string): string {
-  const match = /claude-([a-z]+)-(\d+)(?:-(\d{1,2}))?(?:-\d{8})?(?:-v\d+(?::\d+)?)?(?:\[[^\]]*\])?$/.exec(id)
+  const match = /claude-([a-z]+)-(\d+)(?:-(\d{1,2}))?(?:[-@]\d{8})?(?:-v\d+(?::\d+)?)?(?:\[[^\]]*\])?$/.exec(id)
   const [, family, major, minor] = match ?? []
   if (!family || !major) return id
-  return `${family[0]!.toUpperCase()}${family.slice(1)} ${minor ? `${major}.${minor}` : major}`
+  // `-0` is a spelled-out major release: claude-opus-4-0 is Opus 4
+  return `${family[0]!.toUpperCase()}${family.slice(1)} ${minor && minor !== '0' ? `${major}.${minor}` : major}`
 }
 
 /** Compact token count: `417k`, `1M`, `1.5M`. */
