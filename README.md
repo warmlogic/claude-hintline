@@ -2,11 +2,13 @@
 
 Session info for Claude Code that costs (almost) nothing to draw. Two pieces, usable separately:
 
-- **The plugin** adds model, context, and 5-hour usage to the dim hint line under the prompt, drawn in-process by a [mod](https://code.claude.com/docs/en/plugins/mods/reference.md) (function hooks), so it launches no processes:
+- **The plugin** adds model, context, and rate-limit usage to the dim hint line under the prompt, drawn in-process by a [mod](https://code.claude.com/docs/en/plugins/mods/reference.md) (function hooks), so it launches no processes:
 
   ```text
   Opus 5.5 · 417k/1M · 5h: 63% ↺1h44m
   ```
+
+  It shows the shortest rate-limit window Claude Code reports (today the 5-hour one) always, and any longer window, such as the weekly `7d: 81% ↺2d06h`, only once it's at least 50% used. Labels come from the window's name (`five_hour` → `5h`), so a new window shows up without a code change; a name in any other shape is shown as given.
 
 - **`statusline/statusline.sh`** is an optional [status line](https://code.claude.com/docs/en/statusline) script for where the session is: the repo name (a clickable link to its `origin`), the path within it, the linked worktree, and the branch. Outside a repo it shows the `~`-relative path. It launches nothing but `/bin/bash` itself:
 

@@ -1,6 +1,6 @@
 {
   "name": "hintline",
-  "description": "Model, context, and 5-hour usage in the prompt hint, drawn in-process with no process launches",
+  "description": "Model, context, and rate-limit usage in the prompt hint, drawn in-process with no process launches",
   "author": {
     "name": "Matt Mollison",
     "email": "matt.mollison@gmail.com"

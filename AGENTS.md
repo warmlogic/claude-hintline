@@ -2,7 +2,7 @@
 
 This is the canonical contributor guide, at the repo root. `.claude/CLAUDE.md` is a symlink to this file, so Claude Code loads the same content as project memory.
 
-A Claude Code plugin (a mod: TypeScript function hooks run in-process by Claude Code) that appends model, context, and 5-hour usage to the prompt hint, plus an optional status line script. The design goal is zero process launches per refresh.
+A Claude Code plugin (a mod: TypeScript function hooks run in-process by Claude Code) that appends model, context, and rate-limit usage to the prompt hint, plus an optional status line script. The design goal is zero process launches per refresh.
 
 ## Checks
 
@@ -36,6 +36,8 @@ tests/
 - **Compose, never replace.** `PromptHint`'s `tail` is one string every plugin shares, so the hook appends to `e.props.tail` and never rewrites `hint` (which would replace Claude Code's own line). The terminal draws `tail` dim only.
 - **No band, no pinned status.** The `AbovePrompt` band leaves a blank row beneath it that a plugin can't remove, and `$.ui.status` is drawn with a forced `⚠ <plugin>:` label. The hint tail has neither.
 - **Failures are logged, never raised.** `refresh` catches and logs to `$.ui.log`, so a failed measurement leaves the last figures in place and never breaks the hook it rode on.
+- **Rate-limit windows are data, not code.** Every window in `$.session.usage().rateLimits` is a candidate; `<number word>_<hour|day|week>` kinds get a short label (`5h`, `7d`), and any other kind (`spend_limit`) is shown as given rather than guessed at. The shortest window always shows and the rest only from 50% used, which keeps the dim, right-truncated hint short.
+- **Model names are parsed, never guessed.** `prettyModel` names an ID only when it matches `claude-<family>-<major>[-<minor>]` with the known suffixes; anything else, including the older `claude-3-5-sonnet` order, is shown raw.
 - **No PR number.** Claude Code's footer already shows `PR #N` with its review state (`prStatusFooterEnabled`).
 - **The status line launches nothing.** Bash pattern matching instead of `jq`, `.git/HEAD` instead of `git`, `workspace.repo` (parsed from `origin` by Claude Code) for the link, and only `${var}`-braced expansions next to non-ASCII glyphs: bash 3.2 reads the bytes of `⎇` as part of an unbraced variable name. `workspace.repo`'s keys are matched inside that object only, since other objects also have a `name`.
 

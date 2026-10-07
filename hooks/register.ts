@@ -11,14 +11,15 @@ const usage = atom({ plugin: 'hintline', key: 'usage' } as const, null)
 
 async function measure($: Engine): Promise<Usage> {
   const [model, figures, now] = await Promise.all([$.session.model(), $.session.usage(), $.clock.now()])
-  const fiveHour = figures.rateLimits.find(limit => limit.kind === 'five_hour')
-  const resetsAt = fiveHour?.resetsAt ? Date.parse(fiveHour.resetsAt) : undefined
   return {
     model,
     usedTokens: figures.context.tokens,
     windowTokens: figures.context.window,
-    fiveHourPercent: fiveHour?.percentUsed,
-    fiveHourResetsInMs: resetsAt !== undefined ? resetsAt - now : undefined,
+    limits: figures.rateLimits.map(limit => ({
+      kind: limit.kind,
+      percent: limit.percentUsed,
+      resetsInMs: limit.resetsAt ? Date.parse(limit.resetsAt) - now : undefined,
+    })),
   }
 }
 
@@ -47,7 +48,7 @@ export const register: Register = on => {
     return result
   })
 
-  // Model, context and 5-hour usage, dim, after the hint line under the prompt.
+  // Model, context and rate-limit usage, dim, after the hint line under the prompt.
   // `tail` is one string every plugin shares, so this appends to it.
   on('ui.render', { component: 'PromptHint' }, async ($, e, next) => {
     const current = await read($, usage)
