@@ -4,7 +4,7 @@ import type { EngineInterface as Engine, Register } from 'claude-code'
 import type { Usage } from '../types'
 import { usageLine } from './line'
 
-// Refresh often enough for the 5-hour countdown's minutes to stay right.
+// Refresh often enough for a countdown's minutes to stay right.
 const COUNTDOWN_REFRESH_MS = 30_000
 
 const usage = atom({ plugin: 'hintline', key: 'usage' } as const, null)
