@@ -8,7 +8,7 @@ Session info for Claude Code that costs (almost) nothing to draw. Two pieces, us
   Opus 5.5 · 417k/1M · 5h: 63% ↺1h44m
   ```
 
-  It shows the shortest rate-limit window Claude Code reports (today the 5-hour one) always, and any longer window, such as the weekly `7d: 81% ↺2d06h`, only once it's at least 50% used. Labels come from the window's name (`five_hour` → `5h`), so a new window shows up without a code change; a name in any other shape is shown as given.
+  It always shows the shortest rate-limit window Claude Code reports: the 5-hour one, or the weekly one on a plan without a 5-hour limit, such as a verified Ultra account. It shows any longer window, such as the weekly `7d: 81% ↺2d06h`, only once it's at least 50% used. Labels come from the window's name (`five_hour` → `5h`), so a new window shows up without a code change; a name in any other shape is shown as given.
 
 - **`statusline/statusline.sh`** is an optional [status line](https://code.claude.com/docs/en/statusline) script for where the session is: the repo name (a clickable link to its `origin`), the path within it, the linked worktree, and the branch. Outside a repo it shows the `~`-relative path. It launches nothing but `/bin/bash` itself:
 

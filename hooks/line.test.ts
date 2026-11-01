@@ -70,6 +70,11 @@ describe('visibleLimits', () => {
       { kind: 'spend_limit', percent: 90 },
     ])
   })
+  test('with no five-hour window, the weekly one always shows', async () => {
+    const weekly = { kind: 'seven_day', percent: 12 }
+    expect(visibleLimits([weekly])).toEqual([weekly])
+    expect(visibleLimits([{ kind: 'spend_limit', percent: 20 }, weekly])).toEqual([weekly])
+  })
   test('with no known window, the first reported one stands in', async () => {
     expect(visibleLimits([{ kind: 'spend_limit', percent: 5 }])).toEqual([{ kind: 'spend_limit', percent: 5 }])
   })
