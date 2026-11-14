@@ -11,6 +11,8 @@ export type Usage = {
   usedTokens?: number
   windowTokens?: number
   limits?: Limit[]
+  /** Time since the main loop's last model response; undefined before the first. */
+  idleMs?: number
 }
 
 declare module 'claude-code' {
