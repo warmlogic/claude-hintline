@@ -85,20 +85,56 @@ describe('usageLine', () => {
     expect(
       usageLine({
         model: 'claude-opus-5-5[1m]',
-        usedTokens: 417_000,
+        usedTokens: 317_000,
         windowTokens: 1_000_000,
+        idleMs: 9 * 60_000,
         limits: [
           { kind: 'five_hour', percent: 63.2, resetsInMs: (1 * 60 + 44) * 60_000 },
           { kind: 'seven_day', percent: 81, resetsInMs: (2 * 24 + 6) * 3_600_000 },
         ],
       }),
-    ).toBe('Opus 5.5 · 417k/1M · 5h: 63% ↺1h44m · 7d: 81% ↺2d06h')
+    ).toBe('Opus 5.5 · 317k/1M · cache 51m · 5h: 63% ↺1h44m · 7d: 81% ↺2d06h')
   })
   test('drops the countdown once the window has reset', async () => {
-    expect(usageLine({ limits: [{ kind: 'five_hour', percent: 100, resetsInMs: -5 }] })).toBe('5h: 100%')
+    expect(usageLine({ limits: [{ kind: 'five_hour', percent: 30, resetsInMs: -5 }] })).toBe('5h: 30%')
   })
   test('drops what is unknown', async () => {
     expect(usageLine({ model: 'Sonnet' })).toBe('Sonnet')
     expect(usageLine({})).toBe('')
+  })
+})
+
+describe('cache', () => {
+  const plan = [{ kind: 'five_hour', percent: 10 }]
+  test('counts down an hour on a plan, five minutes otherwise', async () => {
+    expect(usageLine({ idleMs: 9 * 60_000, limits: plan })).toBe('cache 51m · 5h: 10%')
+    expect(usageLine({ idleMs: 9 * 60_000, limits: [{ kind: 'seven_day', percent: 10 }] })).toBe('cache 51m · 7d: 10%')
+    expect(usageLine({ idleMs: 2 * 60_000 })).toBe('cache 3m')
+    expect(usageLine({ idleMs: 2 * 60_000, limits: [{ kind: 'spend_limit', percent: 10 }] })).toBe(
+      'cache 3m · spend_limit: 10%',
+    )
+  })
+  test('is cold from its last minute', async () => {
+    expect(usageLine({ idleMs: 3_600_000 - 60_000, limits: plan })).toBe('cache 1m · 5h: 10%')
+    expect(usageLine({ idleMs: 3_600_000 - 59_999, limits: plan })).toBe('cache cold · 5h: 10%')
+    expect(usageLine({ idleMs: 300_000 })).toBe('cache cold')
+  })
+  test('is hidden before the first response and while a turn runs', async () => {
+    expect(usageLine({ limits: plan })).toBe('5h: 10%')
+    expect(usageLine({ idleMs: 60_000, limits: plan }, true)).toBe('5h: 10%')
+  })
+})
+
+describe('hand-off alert', () => {
+  const window = 1_000_000
+  test('leads the line from 400k tokens of context', async () => {
+    expect(usageLine({ usedTokens: 399_999, windowTokens: window })).toBe('400k/1M')
+    expect(usageLine({ usedTokens: 400_000, windowTokens: window })).toBe('⚠ hand off · 400k/1M')
+  })
+  test('ignores rate limits, which a fresh session would not reset', async () => {
+    expect(usageLine({ limits: [{ kind: 'five_hour', percent: 95 }] })).toBe('5h: 95%')
+  })
+  test('needs a reading to fire', async () => {
+    expect(usageLine({ windowTokens: window })).toBe('')
   })
 })

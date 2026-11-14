@@ -20,7 +20,7 @@ All four must pass before committing. `tsconfig.json` extends `.claude-plugin/ty
 ```text
 hooks/
   hooks.json        # { "modules": ["./register.ts"] }
-  register.ts       # hooks: refresh on session.start / turn.complete / a 30 s clock; draw on ui.render PromptHint
+  register.ts       # hooks: refresh on session.start / turn.complete / a 30 s clock; turn.step times the last request; draw on ui.render PromptHint
   line.ts           # pure formatting (no `$`), so tests drive it directly
   line.test.ts
 types/index.d.ts    # $.state contract: 'hintline'.usage
@@ -37,6 +37,8 @@ tests/
 - **No band, no pinned status.** The `AbovePrompt` band leaves a blank row beneath it that a plugin can't remove, and `$.ui.status` is drawn with a forced `⚠ <plugin>:` label. The hint tail has neither.
 - **Failures are logged, never raised.** `refresh` catches and logs to `$.ui.log`, so a failed measurement leaves the last figures in place and never breaks the hook it rode on.
 - **Rate-limit windows are data, not code.** Every window in `$.session.usage().rateLimits` is a candidate (Claude Code reports `five_hour`, `seven_day`, and on a gateway `spend_limit`; its per-model weekly limits, such as Fable's, don't reach mods); `<number word>_<hour|day|week>` kinds get a short label (`5h`, `7d`), and any other kind (`spend_limit`) is shown as given rather than guessed at. The shortest window always shows (the weekly one on a plan with no 5-hour limit) and the rest only from 50% used, which keeps the dim, right-truncated hint short.
+- **The cache state is estimated.** Mods get no `prompt_cache` figures (those reach only the status line's JSON), so a `turn.step` hook records when the main loop last sent a request that got a response (`agentId` absent, `usage` present; the cache lifetime runs from the request), and the line counts down from it, reading `cold` in the last minute: an hour when a `five_hour` or `seven_day` window is reported (a subscription), five minutes otherwise. The timestamp lives in `register`'s scope, not the atom, since `refresh` skips writing an unchanged line. A subscription in overage, `/clear`, a model switch and a resume make the estimate wrong; that's accepted to keep the mod small.
+- **One hand-off alert, on context only.** `⚠ hand off` leads the line from 400k tokens of context, first so the right-side truncation can't cut it. Rate-limit windows belong to the account, so a fresh session wouldn't reset them.
 - **Model names are parsed, never guessed.** `prettyModel` names an ID only when it matches `claude-<family>-<major>[-<minor>]` with the known suffixes; anything else, including the older `claude-3-5-sonnet` order, is shown raw.
 - **No PR number.** Claude Code's footer already shows `PR #N` with its review state (`prStatusFooterEnabled`).
 - **The status line's input keys** (`workspace.current_dir`, `workspace.git_worktree`, `workspace.repo.{host,owner,name}`) are defined in Claude Code's [status line docs](https://code.claude.com/docs/en/statusline); a key that changes degrades silently to the folder-name fallback.
