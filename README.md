@@ -8,7 +8,7 @@ Session info for Claude Code that costs (almost) nothing to draw. Two pieces, us
   Opus 5.5 · 182k/1M · cache 51m · 5h: 63% ↺1h44m
   ```
 
-  `cache 51m` is how long the prompt cache likely stays warm: an hour after the last response on a subscription, five minutes otherwise. `cache cold` means the next message re-writes the whole context. It's an estimate, hidden while Claude is working. From 400k tokens of context or 80% of the 5-hour window, the line starts with `⚠ hand off`: a fresh session is likely cheaper than carrying this one on.
+  `cache 51m` is how long the prompt cache likely stays warm: an hour from the last request on a subscription, five minutes otherwise. `cache cold` means the next message re-writes the whole context. It's an estimate, hidden while Claude is working. From 400k tokens of context, the line starts with `⚠ hand off`: a fresh session is likely cheaper than carrying this one on.
 
   It always shows the shortest rate-limit window Claude Code reports: the 5-hour one, or the weekly one on a plan without a 5-hour limit, such as a verified Ultra account. It shows any longer window, such as the weekly `7d: 81% ↺2d06h`, only once it's at least 50% used. Labels come from the window's name (`five_hour` → `5h`), so a new window shows up without a code change; a name in any other shape is shown as given.
 

@@ -15,9 +15,8 @@ const SECONDARY_SHOW_PERCENT = 50
 const SUBSCRIPTION_CACHE_TTL_MS = MS_PER_HOUR
 const DEFAULT_CACHE_TTL_MS = 5 * MS_PER_MINUTE
 const SUBSCRIPTION_WINDOWS = new Set(['five_hour', 'seven_day'])
-// Past either, a fresh session is cheaper than carrying this one on.
+// Past this much context, a fresh session is cheaper than carrying this one on.
 const HANDOFF_CONTEXT_TOKENS = 400_000
-const HANDOFF_FIVE_HOUR_PERCENT = 80
 
 const NUMBER_WORDS: Record<string, number> = {
   one: 1, two: 2, three: 3, four: 4, five: 5, six: 6,
@@ -97,13 +96,8 @@ function cachePart(idleMs: number | undefined, limits: readonly Limit[]): string
   if (idleMs === undefined) return undefined
   const isSubscription = limits.some(limit => SUBSCRIPTION_WINDOWS.has(limit.kind))
   const remaining = (isSubscription ? SUBSCRIPTION_CACHE_TTL_MS : DEFAULT_CACHE_TTL_MS) - idleMs
-  return remaining > 0 ? `cache ${countdown(remaining)}` : 'cache cold'
-}
-
-/** Whether the session is heavy enough that handing off to a fresh one is cheaper. */
-function isHeavy(usage: Usage): boolean {
-  const fiveHour = usage.limits?.find(limit => limit.kind === 'five_hour')
-  return (usage.usedTokens ?? 0) >= HANDOFF_CONTEXT_TOKENS || (fiveHour?.percent ?? 0) >= HANDOFF_FIVE_HOUR_PERCENT
+  // Under a minute left reads cold: the safe side for a cost warning
+  return remaining >= MS_PER_MINUTE ? `cache ${countdown(remaining)}` : 'cache cold'
 }
 
 /**
@@ -114,7 +108,7 @@ function isHeavy(usage: Usage): boolean {
 export function usageLine(usage: Usage, isWorking = false): string {
   const limits = usage.limits ?? []
   const parts: string[] = []
-  if (isHeavy(usage)) parts.push('⚠ hand off')
+  if ((usage.usedTokens ?? 0) >= HANDOFF_CONTEXT_TOKENS) parts.push('⚠ hand off')
   if (usage.model) parts.push(prettyModel(usage.model))
   if (usage.usedTokens !== undefined && usage.windowTokens !== undefined) {
     parts.push(`${tokens(usage.usedTokens)}/${tokens(usage.windowTokens)}`)

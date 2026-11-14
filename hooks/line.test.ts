@@ -114,8 +114,9 @@ describe('cache', () => {
       'cache 3m · spend_limit: 10%',
     )
   })
-  test('is cold from the end of its lifetime', async () => {
-    expect(usageLine({ idleMs: 3_600_000, limits: plan })).toBe('cache cold · 5h: 10%')
+  test('is cold from its last minute', async () => {
+    expect(usageLine({ idleMs: 3_600_000 - 60_000, limits: plan })).toBe('cache 1m · 5h: 10%')
+    expect(usageLine({ idleMs: 3_600_000 - 59_999, limits: plan })).toBe('cache cold · 5h: 10%')
     expect(usageLine({ idleMs: 300_000 })).toBe('cache cold')
   })
   test('is hidden before the first response and while a turn runs', async () => {
@@ -130,13 +131,10 @@ describe('hand-off alert', () => {
     expect(usageLine({ usedTokens: 399_999, windowTokens: window })).toBe('400k/1M')
     expect(usageLine({ usedTokens: 400_000, windowTokens: window })).toBe('⚠ hand off · 400k/1M')
   })
-  test('leads the line from 80% of the five-hour window only', async () => {
-    expect(usageLine({ limits: [{ kind: 'five_hour', percent: 79.9 }] })).toBe('5h: 80%')
-    expect(usageLine({ limits: [{ kind: 'five_hour', percent: 80 }] })).toBe('⚠ hand off · 5h: 80%')
-    expect(usageLine({ limits: [{ kind: 'seven_day', percent: 90 }] })).toBe('7d: 90%')
+  test('ignores rate limits, which a fresh session would not reset', async () => {
+    expect(usageLine({ limits: [{ kind: 'five_hour', percent: 95 }] })).toBe('5h: 95%')
   })
   test('needs a reading to fire', async () => {
     expect(usageLine({ windowTokens: window })).toBe('')
-    expect(usageLine({ limits: [] })).toBe('')
   })
 })

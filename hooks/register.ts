@@ -38,8 +38,8 @@ async function refresh($: Engine, lastResponseAt: number | undefined): Promise<v
 }
 
 export const register: Register = on => {
-  // When the main loop last had a model response, which renews the prompt
-  // cache. Kept out of the atom, whose write is skipped when the text is unchanged.
+  // When the main loop last sent a request that got a response, which renews
+  // the prompt cache. Kept out of the atom, whose write is skipped when the text is unchanged.
   let lastResponseAt: number | undefined
 
   on('session.start', async ($, e, next) => {
@@ -49,10 +49,12 @@ export const register: Register = on => {
     return result
   })
 
-  // Each main-loop response renews the cache; a subagent's (`agentId`) or a failed request doesn't.
+  // A main-loop request that gets a response renews the cache from when it was
+  // sent; a subagent's (`agentId`) or a failed request doesn't.
   on('turn.step', async function* ($, e, next) {
+    const sentAt = await $.clock.now()
     const result = yield* next(e)
-    if (e.agentId === undefined && result.usage !== null) lastResponseAt = await $.clock.now()
+    if (e.agentId === undefined && result.usage !== null) lastResponseAt = sentAt
     return result
   })
 
