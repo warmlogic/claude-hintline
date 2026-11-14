@@ -9,11 +9,11 @@ const COUNTDOWN_REFRESH_MS = 30_000
 
 const usage = atom({ plugin: 'hintline', key: 'usage' } as const, null)
 
-async function measure($: Engine, lastResponseAt: number | undefined): Promise<Usage> {
+async function measure($: Engine, lastRequestAt: number | undefined): Promise<Usage> {
   const [model, figures, now] = await Promise.all([$.session.model(), $.session.usage(), $.clock.now()])
   return {
     model,
-    idleMs: lastResponseAt === undefined ? undefined : now - lastResponseAt,
+    idleMs: lastRequestAt === undefined ? undefined : now - lastRequestAt,
     usedTokens: figures.context.tokens,
     windowTokens: figures.context.window,
     limits: figures.rateLimits.map(limit => ({
@@ -25,9 +25,9 @@ async function measure($: Engine, lastResponseAt: number | undefined): Promise<U
 }
 
 /** Re-measures and stores the figures, which redraws the hint; a failure is logged, never raised. */
-async function refresh($: Engine, lastResponseAt: number | undefined): Promise<void> {
+async function refresh($: Engine, lastRequestAt: number | undefined): Promise<void> {
   try {
-    const next = await measure($, lastResponseAt)
+    const next = await measure($, lastRequestAt)
     const current = await read($, usage)
     // A write redraws the hint, so skip it when the visible text would not change
     if (current !== null && usageLine(current) === usageLine(next)) return
@@ -40,12 +40,12 @@ async function refresh($: Engine, lastResponseAt: number | undefined): Promise<v
 export const register: Register = on => {
   // When the main loop last sent a request that got a response, which renews
   // the prompt cache. Kept out of the atom, whose write is skipped when the text is unchanged.
-  let lastResponseAt: number | undefined
+  let lastRequestAt: number | undefined
 
   on('session.start', async ($, e, next) => {
     const result = await next(e)
-    await refresh($, lastResponseAt)
-    $.clock.every(COUNTDOWN_REFRESH_MS, () => void refresh($, lastResponseAt))
+    await refresh($, lastRequestAt)
+    $.clock.every(COUNTDOWN_REFRESH_MS, () => void refresh($, lastRequestAt))
     return result
   })
 
@@ -54,14 +54,14 @@ export const register: Register = on => {
   on('turn.step', async function* ($, e, next) {
     const sentAt = await $.clock.now()
     const result = yield* next(e)
-    if (e.agentId === undefined && result.usage !== null) lastResponseAt = sentAt
+    if (e.agentId === undefined && result.usage !== null) lastRequestAt = sentAt
     return result
   })
 
   // A turn moves the context and rate-limit figures.
   on('turn.complete', async ($, e, next) => {
     const result = await next(e)
-    await refresh($, lastResponseAt)
+    await refresh($, lastRequestAt)
     return result
   })
 

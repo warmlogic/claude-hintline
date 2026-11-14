@@ -10,7 +10,7 @@ const MS_PER_DAY = 24 * MS_PER_HOUR
 // Windows other than the shortest show only from this much used: a weekly
 // limit at 10% is noise most of the week.
 const SECONDARY_SHOW_PERCENT = 50
-// The prompt cache outlives the last response by an hour on a subscription
+// The prompt cache outlives the last request by an hour on a subscription
 // (one reports a five-hour or weekly window) and five minutes otherwise.
 const SUBSCRIPTION_CACHE_TTL_MS = MS_PER_HOUR
 const DEFAULT_CACHE_TTL_MS = 5 * MS_PER_MINUTE

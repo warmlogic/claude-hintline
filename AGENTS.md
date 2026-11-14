@@ -20,7 +20,7 @@ All four must pass before committing. `tsconfig.json` extends `.claude-plugin/ty
 ```text
 hooks/
   hooks.json        # { "modules": ["./register.ts"] }
-  register.ts       # hooks: refresh on session.start / turn.complete / a 30 s clock; turn.step times the last response; draw on ui.render PromptHint
+  register.ts       # hooks: refresh on session.start / turn.complete / a 30 s clock; turn.step times the last request; draw on ui.render PromptHint
   line.ts           # pure formatting (no `$`), so tests drive it directly
   line.test.ts
 types/index.d.ts    # $.state contract: 'hintline'.usage
